@@ -3,34 +3,26 @@ require 'json'
 
 USER_MATCH = /(@\w+)/.freeze
 
-ITEMS = [
+ITEMS = {
   # fish
-  'a large trout',
-  'a trout',
-  'a halibut',
+  'a trout' => 1.0,
+  'a large trout' => 0.5,
+  'a halibut' => 0.5,
 
   # slabs of meat
-  'a 32oz porterhouse',
-  'a slab of bacon',
+  'a 32oz porterhouse' => 0.25,
+  'a slab of bacon' => 0.25,
 
   # construction items
-  'a 2x4',
-  'a crowbar',
-  'a shovel'
-].freeze
+  'a 2x4' => 0.25,
+  'a crowbar' => 0.25,
+  'a shovel' => 0.25
+}.freeze
 
 post '/' do
   return 400 unless valid_token?
 
   response.headers['Content-Type'] = 'application/json'
-
-  message = [
-    slap_source,
-    'slaps',
-    slap_recipient,
-    'around a bit with',
-    random_item
-  ].join(' ')
 
   JSON.dump({
     response_type: "in_channel",
@@ -43,8 +35,24 @@ def valid_token?
   params['token'] == ENV['SLACK_TOKEN']
 end
 
+def message
+  [ slap_source,
+    slaps,
+    slap_recipient,
+    slap_modifier
+  ].join(' ')
+end
+
 def slap_source
   "<@#{params['user_id']}|#{params['user_name']}>"
+end
+
+def slaps
+  "slaps"
+end
+
+def slap_modifier
+  "around a bit with #{weighted_rand(ITEMS)}"
 end
 
 def slap_recipient
@@ -55,6 +63,8 @@ def slap_recipient
   end
 end
 
-def random_item
-  ITEMS.sample
+def weighted_rand(items = {})
+  range = items.values.inject(&:+)
+  lucky = range * rand
+  items.each{|k,v| lucky -= v; return k if lucky <= 0 }
 end
