@@ -20,7 +20,7 @@ ITEMS = {
 }.freeze
 
 post '/' do
-  return 400 unless valid_token?
+  halt(401, 'Invalid SLACK_TOKEN') unless valid_token?
 
   response.headers['Content-Type'] = 'application/json'
 
@@ -32,7 +32,7 @@ end
 
 
 def valid_token?
-  params['token'] == ENV['SLACK_TOKEN']
+  ENV.fetch('SLACK_TOKEN') == params['token']
 end
 
 def message
@@ -56,7 +56,7 @@ def slap_modifier
 end
 
 def slap_recipient
-  if params['text'].start_with?('@')
+  if params['text'].to_s.start_with?('@')
     "<#{params['text']}>"
   else
     params['text']
