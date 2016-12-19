@@ -25,9 +25,9 @@ post '/' do
   response.headers['Content-Type'] = 'application/json'
 
   message = [
-    "<@#{params['user_id']}|#{params['user_name']}",
+    slap_source,
     'slaps',
-    params['text'],
+    slap_recipient,
     'around a bit with',
     random_item
   ].join(' ')
@@ -41,6 +41,18 @@ end
 
 def valid_token?
   params['token'] == ENV['SLACK_TOKEN']
+end
+
+def slap_source
+  "<@#{params['user_id']}|#{params['user_name']}>"
+end
+
+def slap_recipient
+  if params['text'].start_with?('@')
+    "<#{params['text']}>"
+  else
+    params['text']
+  end
 end
 
 def random_item
