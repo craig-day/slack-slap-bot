@@ -1,2 +1,3 @@
+sudo: false
 language: ruby
-script: ruby test/app_test.rb
+script: bundle exec ruby test/app_test.rb
